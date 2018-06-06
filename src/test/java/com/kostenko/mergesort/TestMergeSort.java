@@ -10,6 +10,9 @@ import org.junit.Test;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BinaryOperator;
 
 import static java.lang.String.format;
 import static java.util.Arrays.copyOf;
@@ -27,13 +30,16 @@ public class TestMergeSort {
     private Sort PARALLEL_MERGE;
     private boolean runSlowSorters;
     private int numberOfElements;
+    private int numberOfTries;
 
     @Before
     public void setup() {
-        String size = System.getProperty("size", "100000");
+        String size = System.getProperty("size", "10000000");
         String runSlow = System.getProperty("slow", "false");
+        String tries = System.getProperty("tries", "100");
         numberOfElements = Integer.parseInt(size);
         runSlowSorters = Boolean.parseBoolean(runSlow);
+        numberOfTries = Integer.parseInt(tries);
 
         SIMPLE = new SimpleSort();
         INSERT = new InsertSort();
@@ -55,7 +61,6 @@ public class TestMergeSort {
         int[] bigArrayInsertSort = copyOf(bigArraySimpleSort, bigArraySimpleSort.length);
         int[] bigArrayMergeSort = copyOf(bigArraySimpleSort, bigArraySimpleSort.length);
         int[] bigArrayMergeParallelSort = copyOf(bigArraySimpleSort, bigArraySimpleSort.length);
-
         if (runSlowSorters) {
             test(SIMPLE, bigArraySimpleSort);
             test(INSERT, bigArrayInsertSort);
@@ -64,16 +69,27 @@ public class TestMergeSort {
         test(PARALLEL_MERGE, bigArrayMergeParallelSort);
     }
 
-    private void test(Sort sort, int[] array) {
+    private void test(final Sort sort, final int[] array) {
         System.out.println("-------------------------------------------------------------");
-        System.out.println(format("Sorting arrays with %d elements", array.length));
         String className = sort.getClass().getSimpleName();
-        Instant before = Instant.now();
-        sort.sort(array);
-        Instant after = Instant.now();
-        long millis = Duration.between(before, after).toMillis();
-        System.out.println(format("Sorted by: %s, Time: %d millis, %d seconds", className, millis, millis / 1000));
-        isSorted(array);
+        System.out.println(format("Sorting arrays with size = %d, by %s algorithm", array.length, className));
+        System.out.println("Number of tries: " + numberOfTries);
+
+        List<Long> tryTime = new ArrayList<>(numberOfTries);
+        for (int i = 0; i < numberOfTries; i++) {
+            Instant before = Instant.now();
+            sort.sort(array);
+            Instant after = Instant.now();
+            isSorted(array); //Asserts
+            long millis = Duration.between(before, after).toMillis();
+            tryTime.add(millis);
+        }
+        long timeMin = tryTime.stream().reduce(BinaryOperator.minBy(Long::compareTo)).get();
+        long timeMax = tryTime.stream().reduce(BinaryOperator.maxBy(Long::compareTo)).get();
+        long timeAvg = (timeMin + timeMax) / 2;
+
+        System.out.println("Sorted successfully.");
+        System.out.println(format("Time: min - %d millis, max - %d millis, avg - %d millis, avg - %d seconds", timeMin, timeMax, timeAvg, timeAvg / 1000));
         System.out.println("-------------------------------------------------------------");
     }
 
