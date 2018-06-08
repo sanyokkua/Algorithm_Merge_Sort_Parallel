@@ -86,10 +86,10 @@ public class TestMergeSort {
         }
         long timeMin = tryTime.stream().reduce(BinaryOperator.minBy(Long::compareTo)).get();
         long timeMax = tryTime.stream().reduce(BinaryOperator.maxBy(Long::compareTo)).get();
-        long timeAvg = (timeMin + timeMax) / 2;
+        double timeAvg = tryTime.stream().mapToLong(value -> value.longValue()).average().getAsDouble();
 
         System.out.println("Sorted successfully.");
-        System.out.println(format("Time: min - %d millis, max - %d millis, avg - %d millis, avg - %d seconds", timeMin, timeMax, timeAvg, timeAvg / 1000));
+        System.out.println(format("Time: min - %d millis, max - %d millis, avg - %s millis, avg - %s seconds", timeMin, timeMax, timeAvg, timeAvg / 1000));
         System.out.println("-------------------------------------------------------------");
     }
 
