@@ -16,6 +16,7 @@ dependencies {
 test {
     systemProperty 'slow', System.getProperty('slow')
     systemProperty 'size', System.getProperty('size')
+    systemProperty 'tries', System.getProperty('tries')
     testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
     }

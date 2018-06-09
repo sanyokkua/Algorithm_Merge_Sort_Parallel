@@ -29,7 +29,7 @@ public class TestMergeSort {
     private Sort MERGE;
     private Sort PARALLEL_MERGE;
     private boolean runSlowSorters;
-    private int numberOfElements;
+    private int maxNumberOfElements;
     private int numberOfTries;
 
     @Before
@@ -37,7 +37,7 @@ public class TestMergeSort {
         String size = System.getProperty("size", "10000000");
         String runSlow = System.getProperty("slow", "false");
         String tries = System.getProperty("tries", "100");
-        numberOfElements = Integer.parseInt(size);
+        maxNumberOfElements = Integer.parseInt(size);
         runSlowSorters = Boolean.parseBoolean(runSlow);
         numberOfTries = Integer.parseInt(tries);
 
@@ -57,16 +57,18 @@ public class TestMergeSort {
 
     @Test
     public void testDynamicBigDataSort() {
-        int[] bigArraySimpleSort = RANDOM.ints(numberOfElements).toArray();
-        int[] bigArrayInsertSort = copyOf(bigArraySimpleSort, bigArraySimpleSort.length);
-        int[] bigArrayMergeSort = copyOf(bigArraySimpleSort, bigArraySimpleSort.length);
-        int[] bigArrayMergeParallelSort = copyOf(bigArraySimpleSort, bigArraySimpleSort.length);
-        if (runSlowSorters) {
-            test(SIMPLE, bigArraySimpleSort);
-            test(INSERT, bigArrayInsertSort);
+        for (int currentSize = 1000; currentSize <= maxNumberOfElements; currentSize *= 10) {
+            int[] bigArraySimpleSort = RANDOM.ints(currentSize).toArray();
+            int[] bigArrayInsertSort = copyOf(bigArraySimpleSort, bigArraySimpleSort.length);
+            int[] bigArrayMergeSort = copyOf(bigArraySimpleSort, bigArraySimpleSort.length);
+            int[] bigArrayMergeParallelSort = copyOf(bigArraySimpleSort, bigArraySimpleSort.length);
+            if (runSlowSorters) {
+                test(SIMPLE, bigArraySimpleSort);
+                test(INSERT, bigArrayInsertSort);
+            }
+            test(MERGE, bigArrayMergeSort);
+            test(PARALLEL_MERGE, bigArrayMergeParallelSort);
         }
-        test(MERGE, bigArrayMergeSort);
-        test(PARALLEL_MERGE, bigArrayMergeParallelSort);
     }
 
     private void test(final Sort sort, final int[] array) {
